@@ -16,38 +16,45 @@ postRouter.post("/add",async(req,res)=>{
     }
 })
 
-postRouter.get("/",async(req,res)=>{
-    const {device}=req.query
-    const {userID}=req.body
+postRouter.get("/", async (req, res) => {
+    const { device, userID } = req.query; 
     try {
-        if(device){
-            const posts=await postModel.find({userID:userID,device})
-            console.log(posts)
-            res.status(200).send(posts)
-        }
-        else{
-            const posts=await postModel.find({userID:userID})
-            console.log(posts)
-            res.status(200).send(posts)
+        if (device) {
+            const posts = await postModel.find({ userID: userID, device });
+            console.log(posts);
+            res.status(200).send(posts);
+        } else {
+          
+            const filter = userID ? { userID: userID } : {};
+            const posts = await postModel.find(filter);
+            console.log(posts);
+            res.status(200).send(posts);
         }
     } catch (error) {
-        res.status(400).send({error})
+        res.status(400).send({ error: error.message }); 
     }
-})
+});
 
 
 
 
-postRouter.patch("/update/:id",async(req,res)=>{
-    const token=req.headers.authorization?.split(" ")[1]
-    const id=req.params.id
+postRouter.patch("/update/:id", async (req, res) => {
+    const id = req.params.id;
     try {
-        const updatepost=await postModel.findByIdAndUpdate(id,req.body)
-        res.status(200).send(updatepost)
+        const updatepost = await postModel.findByIdAndUpdate(id, req.body, {
+            new: true,
+        });
+
+        if (!updatepost) {
+       
+            return res.status(404).send({ error: "Post not found" });
+        }
+
+        res.status(200).send(updatepost);
     } catch (error) {
-        res.status(400).send({error})
+        res.status(400).send({ error: error.message });
     }
-})
+});
 
 postRouter.delete("/delete/:id",async(req,res)=>{
     const token=req.headers.authorization?.split(" ")[1]
